@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Site {
+  id          String   @id @default(uuid())
+  name        String
+  url         String
+  status      String   // ONLINE, OFFLINE, ERROR
+  lastChecked DateTime?
+  
+  // Domain Info
+  domainExpiry DateTime?
+  registrar    String?
+  
+  // Config
+  checkInterval Int @default(5) // minutes
+  
+  logs        MonitoringLog[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MonitoringLog {
+  id        String   @id @default(uuid())
+  siteId    String
+  status    String
+  latency   Int
+  timestamp DateTime @default(now())
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id    String @id @default("default")
+  email String?
+  whatsappNumber String?
+  geminiKey String?
+}
