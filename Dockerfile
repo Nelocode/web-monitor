@@ -1,9 +1,9 @@
 FROM node:20-slim AS base
+# Install openssl for Prisma
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 # Install dependencies only when needed
 FROM base AS deps
-# Install openssl for Prisma
-RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
