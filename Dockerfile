@@ -58,14 +58,20 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
+# Switch to root to ensure we can set permissions
+USER root
+
 # Copy database and set permissions
 # Prisma looks for the DB relative to schema.prisma (which is in ./prisma)
 COPY --from=builder --chown=nextjs:nodejs /app/dev.db ./prisma/dev.db
-# Copy environment file
 COPY --from=builder --chown=nextjs:nodejs /app/.env ./.env
 
-# Restore write permission to the directory for SQLite journal files
-RUN chown -R nextjs:nodejs /app/prisma
+# Update permissions for the prisma directory to ensure SQLite can write journal files
+# We ran as root to make sure this works
+RUN chmod -R 777 /app/prisma
 
-# Hardcode STARTUP env vars to ensure they are correct (bypassing potentially bad dashboard config)
-CMD ["sh", "-c", "export DATABASE_URL=file:./prisma/dev.db && export PORT=3000 && node server.js"]
+# Switch back to non-root user
+USER nextjs
+
+# Hardcode STARTUP env vars with ABSOLUTE PATH to ensure correctness
+CMD ["sh", "-c", "export DATABASE_URL=file:/app/prisma/dev.db && export PORT=3000 && node server.js"]
