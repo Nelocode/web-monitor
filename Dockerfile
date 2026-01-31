@@ -59,8 +59,12 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 # Copy database and set permissions
-COPY --from=builder --chown=nextjs:nodejs /app/dev.db ./dev.db
+# Prisma looks for the DB relative to schema.prisma (which is in ./prisma)
+COPY --from=builder --chown=nextjs:nodejs /app/dev.db ./prisma/dev.db
+# Copy environment file
+COPY --from=builder --chown=nextjs:nodejs /app/.env ./.env
+
 # Restore write permission to the directory for SQLite journal files
-RUN chown nextjs:nodejs /app
+RUN chown -R nextjs:nodejs /app/prisma
 
 CMD ["node", "server.js"]
