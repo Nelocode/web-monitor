@@ -67,4 +67,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/.env ./.env
 # Restore write permission to the directory for SQLite journal files
 RUN chown -R nextjs:nodejs /app/prisma
 
-CMD ["node", "server.js"]
+# Hardcode STARTUP env vars to ensure they are correct (bypassing potentially bad dashboard config)
+CMD ["sh", "-c", "export DATABASE_URL=file:./prisma/dev.db && export PORT=3000 && node server.js"]
